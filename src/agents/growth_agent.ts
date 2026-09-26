@@ -140,9 +140,13 @@ export function createGrowthAgent({ executor, monitor, fromEmail, sponsorDataSou
     // 1. Notion page -> X post.
     monitor.logThought('Growth', 'Drafting bilingual X post that links the Notion event page', { pageUrl: page.url });
     const { text } = buildTweet({ topic, slot, pageUrl: page.url });
-    const posted = (await callTool(deps, 'Growth', 'x.create_tweet', { body: { text } })) as { data?: { id?: string }; id?: string };
+    const posted = (await callTool(deps, 'Growth', 'x.create_tweet', { body: { text } })) as {
+      data?: { id?: string };
+      id?: string;
+      url?: string; // only the offline mock returns a viewable URL
+    };
     const id = posted.data?.id ?? posted.id ?? '';
-    const tweet = { id, url: tweetUrl(id), text };
+    const tweet = { id, url: posted.url ?? tweetUrl(id), text };
 
     // 2. Ingest the sponsor CRM from Notion.
     monitor.logThought('Growth', 'Looking up sponsor contacts in the Notion CRM');

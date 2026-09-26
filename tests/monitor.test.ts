@@ -75,8 +75,14 @@ test('formatConsoleLine renders time, agent, type and summary', () => {
   monitor.logToolCall('Growth', 'Calling resend.email.create');
   const [event] = monitor.history();
 
-  assert.equal(formatConsoleLine(event, { color: false }), '12:00:01 [Growth] tool_call  Calling resend.email.create');
+  assert.equal(formatConsoleLine(event, { color: false }), '12:00:01 [Growth] tool_call   Calling resend.email.create');
   assert.match(formatConsoleLine(event, { color: true }), /\x1b\[\d+m/);
+});
+
+test('formatConsoleLine keeps a space after the longest type', () => {
+  const monitor = new AgentMonitor({ now: fixedClock });
+  monitor.logToolResult('Growth', 'Tweet posted');
+  assert.equal(formatConsoleLine(monitor.history()[0], { color: false }), '12:00:01 [Growth] tool_result Tweet posted');
 });
 
 test('attachConsolePrinter writes each event and detaches cleanly', () => {
@@ -88,7 +94,7 @@ test('attachConsolePrinter writes each event and detaches cleanly', () => {
   detach();
   monitor.logThought('Bridge', 'ignored');
 
-  assert.deepEqual(lines, ['12:00:01 [Bridge] thought    thinking']);
+  assert.deepEqual(lines, ['12:00:01 [Bridge] thought     thinking']);
   assert.equal(monitor.subscriberCount(), 0);
 });
 

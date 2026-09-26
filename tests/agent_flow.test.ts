@@ -14,7 +14,7 @@ import {
   createToolExecutor,
   type CliResult,
 } from '../src/swytchcode/executor.ts';
-import { MockToolExecutor, DEMO_SPONSORS } from '../src/swytchcode/mock_executor.ts';
+import { MockToolExecutor, MockArtifactStore, DEMO_SPONSORS } from '../src/swytchcode/mock_executor.ts';
 import {
   buildSponsorEmail,
   buildTweet,
@@ -306,4 +306,43 @@ test('settingsFromConfig maps env keys and supplies mock defaults', () => {
     [live.channelId, live.parentPageId, live.sponsorDataSourceId, live.fromEmail],
     ['chan', 'parent', 'ds', 'me@example.com'],
   );
+});
+
+// ---------- viewable mock artifacts ----------
+
+test('MockToolExecutor stores created pages and posts with viewable local URLs', async () => {
+  const store = new MockArtifactStore();
+  const executor = new MockToolExecutor({ store, baseUrl: 'http://localhost:3000' });
+  const body = { parent: { page_id: 'p' }, properties: { title: { title: [{ text: { content: 'My Event' } }] } }, children: [] };
+
+  const page = (await executor.exec('notion.page.create', { body })) as { id: string; url: string };
+  const tweet = (await executor.exec('twitter_v2.tweet.create', { body: { text: 'hello #Antigravity' } })) as {
+    data: { id: string };
+    url: string;
+  };
+
+  assert.equal(page.url, `http://localhost:3000/mock/notion/${page.id}`);
+  assert.equal(store.pages.get(page.id)?.title, 'My Event');
+  assert.deepEqual(store.pages.get(page.id)?.body, body);
+  assert.equal(tweet.url, `http://localhost:3000/mock/x/${tweet.data.id}`);
+  assert.equal(store.tweets.get(tweet.data.id)?.text, 'hello #Antigravity');
+});
+
+test('executors sharing a store never reuse IDs', async () => {
+  const store = new MockArtifactStore();
+  const a = (await new MockToolExecutor({ store }).exec('notion.page.create', { body: {} })) as { id: string };
+  const b = (await new MockToolExecutor({ store }).exec('notion.page.create', { body: {} })) as { id: string };
+  assert.notEqual(a.id, b.id);
+  assert.equal(store.pages.size, 2);
+});
+
+test('growth agent links the mock post URL in sponsor emails when the mock provides one', async () => {
+  const executor = new MockToolExecutor({ baseUrl: 'http://localhost:3000' });
+  const growth = createGrowthAgent({ executor, monitor: new AgentMonitor(), ...growthSettings });
+
+  const outcome = await growth.promote({ topic: 'AI Agents', slot, page });
+
+  assert.match(outcome.tweet.url, /^http:\/\/localhost:3000\/mock\/x\//);
+  const email = executor.calls.find((c) => c.tool === 'resend.email.create')!;
+  assert.ok((email.args.body as { text: string }).text.includes(outcome.tweet.url));
 });

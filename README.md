@@ -4,7 +4,7 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D23.6-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9_Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-58%20Passing-brightgreen?style=flat-square)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-99%20Passing-brightgreen?style=flat-square)](tests/)
 [![Architecture](https://img.shields.io/badge/Architecture-Multi--Agent%20%2F%20SSE-6B46C1?style=flat-square)](dev/specs/spec_community_agents.md)
 [![Tooling](https://img.shields.io/badge/Swytchcode-Notion%20%7C%20X%20%7C%20Resend-FF6B6B?style=flat-square)](.swytchcode/tooling.json)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
@@ -200,12 +200,19 @@ Swytchcode/
 │   │   ├── agent_monitor.ts    # In-memory event bus and circular buffer
 │   │   ├── console_printer.ts  # ANSI terminal output formatter
 │   │   └── sse_handler.ts      # Server-Sent Events HTTP streamer
-│   └── swytchcode/             # Swytchcode tool executor and mocks
-│       ├── executor.ts         # CLI stdio runner for Swytchcode tools
-│       └── mock_executor.ts    # Schema-compliant mock executor
-├── tests/                      # Automated test suite (58 passing tests)
+│   ├── swytchcode/             # Swytchcode tool executor and mocks
+│   │   ├── executor.ts         # CLI stdio runner for Swytchcode tools
+│   │   └── mock_executor.ts    # Schema-compliant mock executor + mock artifact store
+│   └── demo/                   # Single-screen live demo
+│       ├── server.ts           # HTTP server: UI, SSE, run/bridge APIs, mock pages
+│       ├── index.html          # Demo UI (no build step)
+│       ├── mock_views.ts       # Mock Notion page / X post views
+│       ├── prompt_parser.ts    # Natural-language request parser
+│       └── simulate.ts         # Terminal-only end-to-end simulation
+├── tests/                      # Automated test suite (99 passing tests)
 │   ├── agent_flow.test.ts      # End-to-end multi-agent orchestration test
 │   ├── agents.test.ts          # Domain agent unit tests
+│   ├── demo.test.ts            # Demo server, prompt parser, and mock page tests
 │   ├── discord.test.ts         # Discord transport and gateway tests
 │   ├── monitor.test.ts         # Observability and SSE stream tests
 │   └── setup.test.ts           # Configuration and tooling boundary tests
@@ -260,7 +267,7 @@ The application operates in **Mock Mode** by default, requiring no external API 
 | `NOTION_DATABASE_ID` | Live | Target Notion database ID for events and cultural notes. |
 | `NOTION_PARENT_PAGE_ID` | Live | Notion parent page ID under which new pages are nested. |
 | `NOTION_API_VERSION` | Live | Notion API version header (default: `2025-09-03`). |
-| `NOTION_SPONSOR_DATA_SOURCE_ID` | Live | Notion database ID containing sponsor CRM contacts. |
+| `NOTION_SPONSOR_DATA_SOURCE_ID` | Live | Notion **data source** ID of the sponsor CRM (title, `Email` email, and `Company` text properties). |
 | `RESEND_FROM_EMAIL` | Live | Verified sender email address for Resend outbound mail. |
 | `SPONSOR_REPORT_EMAIL` | Live | Internal contact address for sponsor status reporting. |
 | `DISCORD_BOT_TOKEN` | Live | Discord bot token for Gateway connection and reaction monitoring. |
@@ -268,61 +275,99 @@ The application operates in **Mock Mode** by default, requiring no external API 
 | `DISCORD_GUILD_ID` | Live | Discord Server (Guild) ID. |
 | `DISCORD_CHANNEL_GENERAL_ID` | Live | Monitored Discord channel ID for cross-cultural messages. |
 | `DISCORD_CHANNEL_EVENTS_ID` | Live | Monitored Discord channel ID for event polls. |
+| `POLL_WINDOW_SECONDS` | Live | How long a live run waits for Discord votes (default: `60`). |
 
 ---
 
-## Verification and Execution
+## How to Run
 
-### Running Automated Tests
+Run every command from the repository root. The demo needs no credentials.
 
-The test suite validates configuration, observability, Discord subsystems, domain agents, and closed-loop workflows:
-
-```bash
-# Run all 58 automated tests
-npm test
-
-# Run specific subsystem tests
-npm run test:setup      # Validate config loading and tooling boundaries
-npm run test:monitor    # Validate AgentMonitor, ring buffer, and SSE streaming
-npm run test:discord    # Validate Discord transports, polls, and rate limits
-npm run test:agents     # Validate Bridge, Event, and Growth agents
-```
-
-### Static Type Check
-
-Verify TypeScript source files without producing build artifacts:
+### 1. Install
 
 ```bash
-npm run typecheck
+npm install
 ```
 
-### Running the End-to-End Simulation
+Only TypeScript and Node type definitions are installed (for `npm run typecheck`); the app has no runtime dependencies.
 
-Execute the full closed-loop multi-agent workflow in offline mock mode to observe reasoning traces and tool invocations:
-
-```bash
-npm run demo:simulate
-```
-
-### Running the Live Development Server
-
-Launch the real-time event streaming server with hot-reload enabled:
+### 2. Start the demo UI
 
 ```bash
 npm run dev
 ```
 
-Once running, access the Server-Sent Events stream at:
-```text
-http://localhost:3000/api/events
+Open **http://localhost:3000**, keep the switch on **Offline demo**, and click **⚡ Run Autonomous Agent**. You will see:
+
+- **🧠 Live Agent Activity & Reasoning** and **🔌 Swytchcode & Tool Execution**: live event streams (the same events print in the terminal).
+- **Status badges** for Discord, Notion, X, and Resend, with call count, errors, and average latency.
+- **Result cards**: poll outcome, Notion page, X post, and sponsor email results. In offline mode the Notion and X links open **mock pages** served by the demo (`/mock/notion/<id>`, `/mock/x/<id>`), marked with an orange "Mock" banner.
+- **🌏 Try the Cultural Bridge**: click a sample message (or type one) to see the bilingual reply with cultural notes.
+
+Press `Ctrl+C` to stop. The server listens on `127.0.0.1` only, because live mode can post and send email on your behalf.
+
+### 3. Terminal-only simulation
+
+```bash
+npm run demo:simulate
 ```
+
+Runs the Cultural Bridge on sample messages, then the whole loop (Discord polls → Notion page → X post → sponsor emails) offline, and prints an artifact summary.
+
+### 4. Tests and type check
+
+```bash
+npm test                # all 99 tests
+npm run test:setup      # config and Swytchcode tooling boundary
+npm run test:monitor    # AgentMonitor, ring buffer, SSE
+npm run test:discord    # Discord transports, polls, gateway
+npm run test:agents     # Bridge and Event agents
+npm run test:flow       # Swytchcode executor, Growth agent, closed loop
+npm run test:demo       # demo server, prompt parser, mock pages
+npm run typecheck       # prints nothing when clean
+```
+
+### 5. Swytchcode checks
+
+```bash
+swy doctor              # bundles, manifest, and session
+swy list                # the four whitelisted tools
+swy auth status         # which providers are connected
+```
+
+### Offline vs. Live mode
+
+| | Offline demo (`mock`) | Live (`live`) |
+| :--- | :--- | :--- |
+| Discord | In-memory, simulated votes | Real bot (or webhook); waits `POLL_WINDOW_SECONDS` for votes |
+| Notion / X / Resend | `MockToolExecutor`, nothing leaves your machine | Real calls through `swytchcode exec` |
+| Credentials | None | See checklist below |
+
+Keep `DEMO_MODE=mock` in `.env`. It is the default for API calls that do not specify a mode. The UI switch chooses the mode per run, so you can still try **Live** from the UI when you are ready.
+
+**Live-mode checklist:**
+
+1. `"mode": "production"` in `.swytchcode/tooling.json`. In `sandbox` mode requests go to `http://localhost`.
+2. Connect providers: `swy auth connect Notion`, `swy auth connect Resend`, `swy auth connect Twitter`, then confirm with `swy auth status`.
+3. Fill in `.env`: the Discord values (enable the bot's **Message Content** intent in the Developer Portal), `NOTION_PARENT_PAGE_ID`, `NOTION_SPONSOR_DATA_SOURCE_ID`, and `RESEND_FROM_EMAIL` (a verified Resend sender).
+4. Select **Live** in the UI. The hint next to the switch warns about anything still missing.
+
+> Live runs publish a real X post and email every contact in the sponsor data source. Test with a sponsor list that contains only your own address first.
+
+### Troubleshooting
+
+- **`Port 3000 is already in use`**: another server is on the port. Stop it, or set `PORT=3001` in `.env`. To find it (PowerShell): `Get-Process -Id (Get-NetTCPConnection -LocalPort 3000 -State Listen).OwningProcess`
+- **"Reconnecting…" in the UI title bar**: the server stopped. Restart it with `npm run dev`.
+- **`missing credentials for <Provider>`** during a live run: run `swy auth connect <Provider>`.
+- **Mock link returns 404**: mock pages live in memory and are cleared when the server restarts. Run the agent again.
 
 ---
 
 ## Operational Boundaries and Error Recovery
 
-- **Rate Limit Resilience**: The Discord transport handles HTTP 429 responses with exponential backoff and `retry_after` header adherence.
-- **Graceful Mock Degradation**: If `DEMO_MODE=live` is selected but specific provider credentials are unset, the system logs missing keys and falls back to mock executors without crashing.
+- **Rate Limit Resilience**: The Discord transport retries HTTP 429 responses up to 3 times, waiting the `retry_after` time Discord returns.
+- **Graceful Degradation**: In live mode without Discord credentials, Discord falls back to the in-memory transport. Swytchcode tools always run live in live mode; a missing provider connection surfaces as a clear `auth` error in the monitor, and the run stops before anything downstream (no tweet without a Notion page).
+- **Partial Outreach**: A failed sponsor email is logged and the remaining sponsors are still emailed.
 - **Payload Truncation**: Embed descriptions and social posts are clamped to service-specific limits (e.g., 280 characters for X, 1024 characters for Discord embed fields).
 - **Resource Cleanup**: All SSE subscribers and Gateway listeners detach listeners on connection termination to prevent memory leaks.
 

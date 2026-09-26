@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Community Organizer Agent</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --bg-base: #f5f5f7;
+    --surface-acrylic: rgba(255, 255, 255, 0.78);
+    --surface-card: rgba(255, 255, 255, 0.88);
+    --surface-hover: rgba(0, 0, 0, 0.05);
+    --surface-active: rgba(0, 0, 0, 0.09);
+    --surface-selected: rgba(0, 122, 255, 0.12);
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-focus: #007aff;
+    --inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+    --blue: #007aff; --purple: #af52de; --indigo: #5856d6; --teal: #30b0c7;
+    --green: #34c759; --orange: #ff9500; --red: #ff3b30;
+    --text-primary: #1d1d1f;
+    --text-secondary: rgba(60, 60, 67, 0.75);
+    --text-tertiary: rgba(60, 60, 67, 0.5);
+    --blur-dock: blur(28px) saturate(180%);
+    --shadow-dock: 0 12px 36px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.10), 0 4px 14px rgba(0, 0, 0, 0.05);
+    --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    --fast: 150ms; --normal: 240ms;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font: 14px/1.45 var(--font-sans);
+    color: var(--text-primary);
+    background-color: var(--bg-base);
+    background-image: radial-gradient(rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: 100vh;
+    padding: 28px 16px 48px;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- window ---------- */
+  .window {
+    max-width: 1180px; margin: 0 auto;
+    background: var(--surface-acrylic);
+    backdrop-filter: var(--blur-dock); -webkit-backdrop-filter: var(--blur-dock);
+    border: 1px solid var(--border-subtle); border-radius: 18px;
+    box-shadow: var(--shadow-modal), var(--inner-glow);
+    overflow: hidden;
+  }
+  .titlebar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .traffic { display: flex; gap: 8px; }
+  .traffic span { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.12); }
+  .traffic span:nth-child(1) { background: #ff5f56; }
+  .traffic span:nth-child(2) { background: #ffbd2e; }
+  .traffic span:nth-child(3) { background: #27c93f; }
+  .titlebar h1 { flex: 1; margin: 0; font-size: 13px; font-weight: 600; text-align: center; letter-spacing: -0.01em; }
+  .titlebar .sub { color: var(--text-secondary); font-weight: 500; }
+  .conn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-tertiary); flex: none; }
+  .dot.ok { background: var(--green); } .dot.run { background: var(--orange); animation: pulse 1s infinite; }
+  .dot.err { background: var(--red); }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+
+  .content { padding: 20px; display: grid; gap: 16px; }
+
+  /* ---------- composer ---------- */
+  .card {
+    background: var(--surface-card); border: 1px solid var(--border-subtle);
+    border-radius: 14px; box-shadow: var(--shadow-card), var(--inner-glow);
+  }
+  .composer { padding: 14px; display: grid; gap: 12px; }
+  .composer label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  textarea {
+    width: 100%; min-height: 64px; resize: vertical; padding: 10px 12px;
+    border: 1px solid var(--border-subtle); border-radius: 10px; background: rgba(255, 255, 255, 0.9);
+    outline: none; transition: border-color var(--fast) var(--ease-spring), box-shadow var(--fast) var(--ease-spring);
+  }
+  textarea:focus, .bridge input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18); }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .pill-dock {
+    display: inline-flex; padding: 3px; gap: 2px; border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+  .pill-dock button {
+    border: 0; background: transparent; padding: 6px 14px; border-radius: 9999px; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    transition: all var(--normal) var(--ease-spring);
+  }
+  .pill-dock button:hover { color: var(--text-primary); }
+  .pill-dock button[aria-pressed="true"] { background: #fff; color: var(--text-primary); box-shadow: var(--shadow-button); }
+  .btn {
+    border: 0; border-radius: 9999px; padding: 8px 18px; cursor: pointer; font-weight: 600; font-size: 13px;
+    transition: transform var(--fast) var(--ease-spring), box-shadow var(--fast) var(--ease-spring), opacity var(--fast);
+  }
+  .btn:active:not(:disabled) { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 1px 2px rgba(0, 122, 255, 0.3), 0 4px 12px rgba(0, 122, 255, 0.22); }
+  .btn-secondary { background: #fff; box-shadow: var(--shadow-button); }
+  .btn-secondary:hover:not(:disabled) { background: #fafafa; }
+  .hint { font-size: 12px; color: var(--text-secondary); }
+  .hint.warn { color: #b25f00; }
+  .spacer { flex: 1; }
+
+  /* ---------- telemetry ---------- */
+  .telemetry { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 10px; }
+  .badge {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 12px; box-shadow: var(--inner-glow);
+    transition: background var(--normal) var(--ease-spring);
+  }
+  .badge .name { font-weight: 600; font-size: 13px; }
+  .badge .meta { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
+  .badge.run { background: rgba(255, 149, 0, 0.08); }
+  .badge.ok { background: rgba(52, 199, 89, 0.08); }
+  .badge.err { background: rgba(255, 59, 48, 0.08); }
+  .stats { display: flex; align-items: center; gap: 14px; padding: 0 6px; font-size: 12px; color: var(--text-secondary); }
+  .stats b { color: var(--text-primary); font-family: var(--font-mono); font-weight: 600; }
+
+  /* ---------- feeds ---------- */
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel { display: flex; flex-direction: column; min-height: 0; }
+  .panel h2 {
+    margin: 0; padding: 12px 14px; font-size: 13px; font-weight: 600;
+    border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel h2 .count { font-weight: 500; color: var(--text-tertiary); font-family: var(--font-mono); font-size: 12px; }
+  .feed { list-style: none; margin: 0; padding: 6px; height: 340px; overflow-y: auto; }
+  .feed:empty::before { content: attr(data-empty); display: block; padding: 24px 10px; text-align: center; color: var(--text-tertiary); }
+  .row {
+    display: grid; grid-template-columns: auto auto 1fr; gap: 8px; align-items: baseline;
+    padding: 6px 8px; border-radius: 8px; animation: enter var(--normal) var(--ease-spring);
+  }
+  .row:hover { background: var(--surface-hover); }
+  @keyframes enter { from { opacity: 0; transform: translateY(4px); } }
+  .time { font: 11px var(--font-mono); color: var(--text-tertiary); }
+  .agent { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 9999px; white-space: nowrap; }
+  .agent.Supervisor { background: rgba(88, 86, 214, 0.12); color: var(--indigo); }
+  .agent.Bridge { background: rgba(175, 82, 222, 0.12); color: #8e3fb8; }
+  .agent.Event { background: rgba(0, 122, 255, 0.12); color: #0062cc; }
+  .agent.Growth { background: rgba(48, 176, 199, 0.14); color: #1d8397; }
+  .agent.Discord { background: rgba(88, 101, 242, 0.13); color: #4752c4; }
+  .summary { word-break: break-word; }
+  .row.tool_call .summary { font-family: var(--font-mono); font-size: 12.5px; }
+  .row.tool_result .summary { font-family: var(--font-mono); font-size: 12.5px; color: #248a3d; }
+  .row.error .summary { color: var(--red); }
+  .row.status .summary { font-weight: 600; }
+  .row.thought .summary { color: #3a3a3f; }
+
+  /* ---------- artifacts ---------- */
+  .section-title { margin: 4px 2px 0; font-size: 13px; font-weight: 600; }
+  .artifacts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .artifact { padding: 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+  .artifact h3 { margin: 0; font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; gap: 6px; align-items: center; }
+  .artifact .big { font-size: 15px; font-weight: 600; }
+  .artifact .muted { color: var(--text-secondary); font-size: 12.5px; }
+  .artifact .empty { color: var(--text-tertiary); }
+  .artifact a { word-break: break-all; font-size: 12.5px; }
+  .tweet { white-space: pre-wrap; font-size: 12.5px; background: rgba(0, 0, 0, 0.03); border-radius: 8px; padding: 8px 10px; }
+  .emails { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+  .emails li { display: flex; gap: 6px; align-items: center; }
+  .banner { padding: 10px 14px; border-radius: 12px; background: rgba(255, 59, 48, 0.08); color: #c9271c; font-size: 13px; }
+
+  /* ---------- bridge ---------- */
+  .bridge { padding: 14px; display: grid; gap: 10px; }
+  .bridge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bridge input {
+    flex: 1; min-width: 220px; padding: 8px 14px; border-radius: 9999px; border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.9); outline: none; transition: border-color var(--fast), box-shadow var(--fast);
+  }
+  .chip {
+    border: 1px solid var(--border-subtle); background: rgba(255, 255, 255, 0.7); border-radius: 9999px;
+    padding: 4px 12px; font-size: 12.5px; cursor: pointer; transition: all var(--fast) var(--ease-spring);
+  }
+  .chip:hover { background: #fff; box-shadow: var(--shadow-button); }
+  .chip:active { transform: scale(0.96); }
+  .embed { border-left: 4px solid #5865f2; background: rgba(88, 101, 242, 0.06); border-radius: 6px; padding: 10px 12px; display: grid; gap: 6px; }
+  .embed .title { font-weight: 600; }
+  .embed .field-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .embed .field-value { white-space: pre-wrap; font-size: 13px; }
+  .embed .footer { font-size: 11px; color: var(--text-tertiary); }
+
+  @media (max-width: 900px) {
+    .columns { grid-template-columns: 1fr; }
+    .artifacts, .telemetry { grid-template-columns: 1fr 1fr; }
+    .stats { grid-column: 1 / -1; padding: 0; }
+  }
+  @media (max-width: 520px) {
+    body { padding: 12px 8px 32px; }
+    .content { padding: 12px; }
+    .artifacts, .telemetry { grid-template-columns: 1fr; }
+    .titlebar .sub { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="window">
+  <header class="titlebar">
+    <div class="traffic" aria-hidden="true"><span></span><span></span><span></span></div>
+    <h1>🌐 AI Community Organizer Agent <span class="sub">— Live Activity Monitor</span></h1>
+    <span class="conn"><span class="dot" id="conn-dot"></span><span id="conn-label">Connecting…</span></span>
+  </header>
+
+  <div class="content">
+    <!-- Natural language request -->
+    <section class="card composer" aria-label="Request">
+      <label for="prompt">Ask the organizer agent</label>
+      <textarea id="prompt">Host an Indo-Japan AI study night next Saturday, poll the Discord on topics: AI Agents, RAG, Evals, then publish it in Notion, tweet it and pitch our sponsors.</textarea>
+      <div class="toolbar">
+        <div class="pill-dock" role="group" aria-label="Execution mode">
+          <button type="button" data-mode="mock" aria-pressed="true">Offline demo</button>
+          <button type="button" data-mode="live" aria-pressed="false">Live</button>
+        </div>
+        <span class="hint" id="mode-hint">Simulated Discord + Swytchcode responses. Nothing is posted.</span>
+        <span class="spacer"></span>
+        <button class="btn btn-primary" id="run">⚡ Run Autonomous Agent</button>
+      </div>
+    </section>
+
+    <!-- Swytchcode telemetry -->
+    <section class="telemetry" aria-label="Tool status">
+      <div class="badge" data-service="discord"><span class="dot"></span><div><div class="name">Discord</div><div class="meta">polls · announce</div></div></div>
+      <div class="badge" data-service="notion"><span class="dot"></span><div><div class="name">Notion</div><div class="meta">notion.page · query</div></div></div>
+      <div class="badge" data-service="x"><span class="dot"></span><div><div class="name">X</div><div class="meta">twitter_v2.tweet</div></div></div>
+      <div class="badge" data-service="resend"><span class="dot"></span><div><div class="name">Resend</div><div class="meta">resend.email</div></div></div>
+      <div class="stats"><span>calls <b id="stat-calls">0</b></span><span>errors <b id="stat-errors">0</b></span><span>avg <b id="stat-latency">–</b></span></div>
+    </section>
+
+    <!-- Live feeds -->
+    <div class="columns">
+      <section class="card panel">
+        <h2>🧠 Live Agent Activity &amp; Reasoning <span class="count" id="count-reasoning">0</span></h2>
+        <ol class="feed" id="feed-reasoning" data-empty="Agent thoughts will stream here" aria-live="polite"></ol>
+      </section>
+      <section class="card panel">
+        <h2>🔌 Swytchcode &amp; Tool Execution <span class="count" id="count-tools">0</span></h2>
+        <ol class="feed" id="feed-tools" data-empty="Tool calls will stream here" aria-live="polite"></ol>
+      </section>
+    </div>
+
+    <!-- Artifacts -->
+    <h2 class="section-title">📊 Final Outcome &amp; Produced Artifacts</h2>
+    <div id="run-error"></div>
+    <section class="artifacts" aria-label="Artifacts">
+      <article class="card artifact" id="art-discord"><h3>💬 Discord</h3><div class="empty">Polls and announcement appear here</div></article>
+      <article class="card artifact" id="art-notion"><h3>📄 Notion</h3><div class="empty">Event page link appears here</div></article>
+      <article class="card artifact" id="art-x"><h3>𝕏 Post</h3><div class="empty">The published post appears here</div></article>
+      <article class="card artifact" id="art-resend"><h3>✉️ Sponsor emails</h3><div class="empty">Outreach results appear here</div></article>
+    </section>
+
+    <!-- Cultural bridge -->
+    <section class="card bridge" aria-label="Cultural Bridge">
+      <h2 class="section-title" style="margin:0">🌏 Try the Cultural Bridge</h2>
+      <div class="bridge-row">
+        <button class="chip" type="button">お盆休みはいつですか？</button>
+        <button class="chip" type="button">दिवाली की शुभकामनाएं</button>
+        <button class="chip" type="button">Diwali meetup next week!</button>
+        <button class="chip" type="button">田中さんがゴールデンウィーク明けに勉強会を開きます。</button>
+      </div>
+      <form class="bridge-row" id="bridge-form">
+        <input id="bridge-text" placeholder="Type a message in Japanese, Hindi or English…" maxlength="2000" aria-label="Message">
+        <button class="btn btn-secondary" type="submit">Translate &amp; explain</button>
+      </form>
+      <div id="bridge-out"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (sel) => document.querySelector(sel);
+  const el = (tag, props = {}, children = []) => {
+    const node = Object.assign(document.createElement(tag), props);
+    for (const child of [].concat(children)) node.append(child);
+    return node;
+  };
+
+  // ---------- state ----------
+  let mode = 'mock';
+  let status = null;
+  let running = false;
+  const stats = { calls: 0, errors: 0, latency: [] };
+
+  // ---------- mode switch ----------
+  const hints = {
+    mock: 'Simulated Discord + Swytchcode responses. Nothing is posted.',
+    live: 'Real Discord, Notion, X and Resend calls via Swytchcode.',
+  };
+  function renderModeHint() {
+    const hint = $('#mode-hint');
+    hint.className = 'hint';
+    hint.textContent = hints[mode];
+    if (mode === 'live' && status) {
+      const warnings = [];
+      if (status.live.swytchcodeMode !== 'production') warnings.push(`Swytchcode is in ${status.live.swytchcodeMode} mode`);
+      if (status.live.discord === 'mock') warnings.push('no Discord credentials (Discord stays simulated)');
+      if (warnings.length) { hint.className = 'hint warn'; hint.textContent = `⚠ ${warnings.join(' · ')}`; }
+    }
+  }
+  document.querySelectorAll('.pill-dock button').forEach((btn) => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.pill-dock button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    renderModeHint();
+  }));
+  fetch('/api/status').then((r) => r.json()).then((s) => { status = s; renderModeHint(); }).catch(() => {});
+
+  // ---------- telemetry badges ----------
+  function serviceOf(event) {
+    const s = event.summary;
+    if (/notion\./.test(s)) return 'notion';
+    if (/twitter_v2\./.test(s)) return 'x';
+    if (/resend\./.test(s)) return 'resend';
+    if (event.agent === 'Discord' && event.type !== 'thought') return 'discord';
+    return null;
+  }
+  function setBadge(service, state) {
+    const badge = document.querySelector(`.badge[data-service="${service}"]`);
+    badge.className = `badge ${state}`;
+    badge.querySelector('.dot').className = `dot ${state}`;
+  }
+  function resetTelemetry() {
+    ['discord', 'notion', 'x', 'resend'].forEach((s) => setBadge(s, ''));
+    stats.calls = 0; stats.errors = 0; stats.latency = [];
+    renderStats();
+  }
+  function renderStats() {
+    $('#stat-calls').textContent = stats.calls;
+    $('#stat-errors').textContent = stats.errors;
+    const avg = stats.latency.length ? Math.round(stats.latency.reduce((a, b) => a + b, 0) / stats.latency.length) : null;
+    $('#stat-latency').textContent = avg === null ? '–' : `${avg} ms`;
+  }
+
+  // ---------- feeds ----------
+  const isToolEvent = (e) => e.type === 'tool_call' || e.type === 'tool_result' || (e.type === 'error' && /^✖ /.test(e.summary));
+  function localTime(iso) {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  }
+  function append(event) {
+    const feed = isToolEvent(event) ? $('#feed-tools') : $('#feed-reasoning');
+    const row = el('li', { className: `row ${event.type}`, title: event.details ? JSON.stringify(event.details, null, 2) : '' }, [
+      el('span', { className: 'time', textContent: localTime(event.timestamp) }),
+      el('span', { className: `agent ${event.agent}`, textContent: event.agent }),
+      el('span', { className: 'summary', textContent: event.summary }),
+    ]);
+    const stick = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
+    feed.append(row);
+    if (stick) feed.scrollTop = feed.scrollHeight;
+    $('#count-reasoning').textContent = $('#feed-reasoning').children.length;
+    $('#count-tools').textContent = $('#feed-tools').children.length;
+
+    const service = serviceOf(event);
+    if (service) setBadge(service, event.type === 'tool_call' ? 'run' : event.type === 'error' ? 'err' : 'ok');
+    if (event.type === 'tool_call' && service && service !== 'discord') stats.calls++;
+    if (event.type === 'error') stats.errors++;
+    if (typeof event.details?.latencyMs === 'number' && event.type === 'tool_result') stats.latency.push(event.details.latencyMs);
+    renderStats();
+
+    if (event.agent === 'Supervisor' && (/^agent:complete/.test(event.summary) || event.type === 'error')) loadLatest();
+  }
+  function clearFeeds() {
+    $('#feed-reasoning').replaceChildren();
+    $('#feed-tools').replaceChildren();
+    $('#count-reasoning').textContent = '0';
+    $('#count-tools').textContent = '0';
+    resetTelemetry();
+  }
+
+  // ---------- SSE ----------
+  function connect() {
+    const source = new EventSource('/api/events');
+    source.onopen = () => {
+      clearFeeds(); // the server replays recent history on every (re)connect
+      $('#conn-dot').className = 'dot ok';
+      $('#conn-label').textContent = 'Live';
+    };
+    source.onmessage = (msg) => append(JSON.parse(msg.data));
+    source.onerror = () => {
+      $('#conn-dot').className = 'dot err';
+      $('#conn-label').textContent = 'Reconnecting…';
+    };
+  }
+  connect();
+
+  // ---------- run ----------
+  const runBtn = $('#run');
+  function setRunning(value) {
+    running = value;
+    runBtn.disabled = value;
+    runBtn.textContent = value ? '⏳ Agent running…' : '⚡ Run Autonomous Agent';
+  }
+  runBtn.addEventListener('click', async () => {
+    if (running) return;
+    setRunning(true);
+    clearFeeds();
+    renderArtifacts(null);
+    $('#run-error').replaceChildren();
+    try {
+      const res = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: $('#prompt').value, mode }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    } catch (err) {
+      showError(err.message);
+      setRunning(false);
+    }
+  });
+
+  async function loadLatest() {
+    const run = await fetch('/api/run/latest').then((r) => r.json()).catch(() => null);
+    if (!run || run.status === 'idle') return;
+    setRunning(run.status === 'running');
+    if (run.status === 'failed') showError(`Run failed: ${run.error}`);
+    renderArtifacts(run.artifacts || null);
+  }
+  loadLatest();
+
+  function showError(message) {
+    $('#run-error').replaceChildren(el('div', { className: 'banner', textContent: message }));
+  }
+
+  // ---------- artifacts ----------
+  const link = (href, text) => el('a', { href, target: '_blank', rel: 'noopener', textContent: text || href });
+  const card = (id, title, body) => $(id).replaceChildren(el('h3', { textContent: title }), ...[].concat(body));
+  function renderArtifacts(a) {
+    if (!a) {
+      card('#art-discord', '💬 Discord', el('div', { className: 'empty', textContent: 'Polls and announcement appear here' }));
+      card('#art-notion', '📄 Notion', el('div', { className: 'empty', textContent: 'Event page link appears here' }));
+      card('#art-x', '𝕏 Post', el('div', { className: 'empty', textContent: 'The published post appears here' }));
+      card('#art-resend', '✉️ Sponsor emails', el('div', { className: 'empty', textContent: 'Outreach results appear here' }));
+      return;
+    }
+    card('#art-discord', '💬 Discord', [
+      el('div', { className: 'big', textContent: a.plan.topic }),
+      el('div', { className: 'muted', textContent: a.plan.slot }),
+      el('div', { className: 'muted', textContent: `${a.discord.polls} polls + announcement in #${a.discord.channelId} (${a.discord.mode})` }),
+    ]);
+    card('#art-notion', '📄 Notion', [
+      el('div', { className: 'big', textContent: a.notion.title }),
+      link(a.notion.url),
+    ]);
+    card('#art-x', '𝕏 Post', [el('div', { className: 'tweet', textContent: a.x.text }), link(a.x.url, 'Open post')]);
+    const sent = a.emails.filter((e) => e.status === 'sent').length;
+    card('#art-resend', '✉️ Sponsor emails', [
+      el('div', { className: 'big', textContent: `${sent}/${a.emails.length} sent` }),
+      el('ul', { className: 'emails' }, a.emails.map((e) => el('li', {}, [
+        el('span', { className: `dot ${e.status === 'sent' ? 'ok' : 'err'}` }),
+        el('span', { textContent: e.company, title: e.error || e.to }),
+      ]))),
+    ]);
+  }
+
+  // ---------- cultural bridge ----------
+  async function runBridge(text) {
+    const out = $('#bridge-out');
+    if (!text.trim()) return;
+    out.replaceChildren(el('div', { className: 'hint', textContent: 'Bridging…' }));
+    try {
+      const res = await fetch('/api/bridge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error);
+      if (!body.embed) {
+        out.replaceChildren(el('div', { className: 'hint', textContent: 'Plain English with no cultural terms: everyone can read it, no bridge reply needed.' }));
+        return;
+      }
+      const e = body.embed;
+      out.replaceChildren(el('div', { className: 'embed' }, [
+        el('div', { className: 'title', textContent: e.title }),
+        el('div', { textContent: e.description }),
+        ...(e.fields || []).flatMap((f) => [el('div', { className: 'field-name', textContent: f.name }), el('div', { className: 'field-value', textContent: f.value })]),
+        el('div', { className: 'footer', textContent: e.footer?.text || '' }),
+      ]));
+    } catch (err) {
+      out.replaceChildren(el('div', { className: 'banner', textContent: err.message }));
+    }
+  }
+  document.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
+    $('#bridge-text').value = chip.textContent;
+    runBridge(chip.textContent);
+  }));
+  $('#bridge-form').addEventListener('submit', (ev) => { ev.preventDefault(); runBridge($('#bridge-text').value); });
+})();
+</script>
+</body>
+</html>

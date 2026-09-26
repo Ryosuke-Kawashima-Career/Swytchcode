@@ -11,7 +11,7 @@
       "version": "1.0.0"
     }
   },
-  "mode": "sandbox",
+  "mode": "production",
   "tools": {
     "notion.page.create": {
       "desc": "",

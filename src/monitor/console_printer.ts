@@ -9,7 +9,7 @@ const COLORS: Record<ActivityType, number> = {
   status: 35, // magenta
 };
 
-const TYPE_WIDTH = 11; // length of the longest type, "tool_result"
+const TYPE_WIDTH = 12; // longest type ("tool_result", 11) plus one space before the summary
 
 export interface PrinterOptions {
   color?: boolean;
