@@ -12,6 +12,7 @@
     "test:setup": "node --test tests/setup.test.ts",
     "test:monitor": "node --test tests/monitor.test.ts",
     "test:discord": "node --test tests/discord.test.ts",
+    "test:agents": "node --test tests/agents.test.ts",
     "typecheck": "tsc",
     "demo:simulate": "node --env-file-if-exists=.env src/demo/simulate.ts",
     "dev": "node --env-file-if-exists=.env --watch src/demo/server.ts"
