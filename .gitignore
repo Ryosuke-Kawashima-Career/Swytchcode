@@ -1,0 +1,11 @@
+.env.echosphere
+.env.swytchcode
+.agents
+.claude
+.codex
+dev/
+.env
+node_modules/
+.swytchcode/integrations/
+
+.swytchcode/workspace.json

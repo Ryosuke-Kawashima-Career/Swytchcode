@@ -1,0 +1,1047 @@
+{
+  "editor": "none",
+  "integrations": {
+    "Notion.notion": {
+      "version": "2.0.0"
+    },
+    "Resend.resend": {
+      "version": "1.5.0"
+    },
+    "Twitter.twitter_v2": {
+      "version": "1.0.0"
+    }
+  },
+  "mode": "sandbox",
+  "tools": {
+    "notion.page.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "children": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "cover": {
+                  "required": false,
+                  "type": "string"
+                },
+                "icon": {
+                  "required": false,
+                  "type": "string"
+                },
+                "parent": {
+                  "properties": {
+                    "_COMPOSITION": {
+                      "required": false,
+                      "type": "ONE_OF"
+                    },
+                    "variant_2": {
+                      "properties": {
+                        "type": {
+                          "required": true,
+                          "type": "any"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "variant_dataSourceIdParentRequest": {
+                      "properties": {
+                        "database_id": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "required": false,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "database_id"
+                      ],
+                      "type": "object"
+                    },
+                    "variant_pageIdParentRequest": {
+                      "properties": {
+                        "page_id": {
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page_id"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "properties": {
+                  "required": true,
+                  "type": "map[STRING]ANY"
+                }
+              },
+              "required": [
+                "parent",
+                "properties"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "76323194220d5fe7b92ac67d425a8e7de239b2178cb23019ff53228cff674770",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Create a page",
+      "type": "method"
+    },
+    "notion.query.create": {
+      "desc": "Query a data source (database) using filters and sorts",
+      "inputs": [
+        {
+          "data_source_id": {
+            "LOCATION": "path",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "filter_properties": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "[]STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "archived": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "filter": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "in_trash": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "page_size": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "sorts": {
+                  "items": {
+                    "properties": {
+                      "direction": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "property": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "property",
+                      "direction"
+                    ],
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "start_cursor": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "465a41f90eb6c7e7936be2d52804286df5e9bdc74fa375925265687fc27df742",
+      "output": {
+        "schema": {
+          "properties": {
+            "value": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Query a data source",
+      "type": "method"
+    },
+    "resend.email.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "Idempotency-Key": {
+            "LOCATION": "header",
+            "MAX_LENGTH": 256,
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "attachments": {
+                  "items": {
+                    "properties": {
+                      "content": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "content_type": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "filename": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "path": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "bcc": {
+                  "properties": {
+                    "_COMPOSITION": {
+                      "required": false,
+                      "type": "ONE_OF"
+                    },
+                    "variant_0": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "variant_1": {
+                      "required": false,
+                      "type": "[]STRING"
+                    }
+                  },
+                  "type": "object"
+                },
+                "cc": {
+                  "properties": {
+                    "_COMPOSITION": {
+                      "required": false,
+                      "type": "ONE_OF"
+                    },
+                    "variant_0": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "variant_1": {
+                      "required": false,
+                      "type": "[]STRING"
+                    }
+                  },
+                  "type": "object"
+                },
+                "from": {
+                  "required": true,
+                  "type": "string"
+                },
+                "headers": {
+                  "properties": {
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "html": {
+                  "required": false,
+                  "type": "string"
+                },
+                "reply_to": {
+                  "properties": {
+                    "_COMPOSITION": {
+                      "required": false,
+                      "type": "ONE_OF"
+                    },
+                    "variant_0": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "variant_1": {
+                      "required": false,
+                      "type": "[]STRING"
+                    }
+                  },
+                  "type": "object"
+                },
+                "scheduled_at": {
+                  "required": false,
+                  "type": "string"
+                },
+                "subject": {
+                  "required": true,
+                  "type": "string"
+                },
+                "tags": {
+                  "items": {
+                    "properties": {
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "template": {
+                  "properties": {
+                    "id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "value": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "variables": {
+                      "required": false,
+                      "type": "map[STRING]STRUCT(SendEmailRequest_template_variables_Value)"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "type": "object"
+                },
+                "text": {
+                  "required": false,
+                  "type": "string"
+                },
+                "to": {
+                  "properties": {
+                    "_COMPOSITION": {
+                      "required": false,
+                      "type": "ONE_OF"
+                    },
+                    "variant_0": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "variant_1": {
+                      "required": false,
+                      "type": "[]STRING"
+                    }
+                  },
+                  "type": "object"
+                },
+                "topic_id": {
+                  "required": false,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "subject"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Resend.resend@1.5.0",
+      "method_hash": "2defcf50393a401ca13f398e7298d8b41b697302e8cba6fcae4dcff8e3a99bdb",
+      "output": {
+        "schema": {
+          "properties": {
+            "id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Send an email",
+      "type": "method"
+    },
+    "twitter_v2.tweet.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "body": {
+            "CONTENT_TYPE": "application/json",
+            "LOCATION": "body",
+            "REQUIRED": true,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "card_uri": {
+                  "required": false,
+                  "type": "string"
+                },
+                "community_id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "direct_message_deep_link": {
+                  "required": false,
+                  "type": "string"
+                },
+                "edit_options": {
+                  "properties": {
+                    "previous_post_id": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "previous_post_id"
+                  ],
+                  "type": "object"
+                },
+                "for_super_followers_only": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "geo": {
+                  "properties": {
+                    "place_id": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "place_id"
+                  ],
+                  "type": "object"
+                },
+                "made_with_ai": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "media": {
+                  "properties": {
+                    "call_to_actions": {
+                      "properties": {
+                        "app_install": {
+                          "properties": {
+                            "app_store_id": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "ipad_app_store_id": {
+                              "required": false,
+                              "type": "string"
+                            },
+                            "play_store_id": {
+                              "required": false,
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "visit_site": {
+                          "properties": {
+                            "url": {
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ],
+                          "type": "object"
+                        },
+                        "watch_now": {
+                          "properties": {
+                            "url": {
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "description": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "embeddable": {
+                      "required": false,
+                      "type": "boolean"
+                    },
+                    "media_ids": {
+                      "required": true,
+                      "type": "[]STRING"
+                    },
+                    "preview_media_id": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "tagged_user_ids": {
+                      "required": false,
+                      "type": "[]STRING"
+                    },
+                    "title": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "media_ids"
+                  ],
+                  "type": "object"
+                },
+                "nullcast": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "paid_partnership": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "poll": {
+                  "properties": {
+                    "duration_minutes": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "options": {
+                      "required": true,
+                      "type": "[]STRING"
+                    },
+                    "reply_settings": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "duration_minutes",
+                    "options"
+                  ],
+                  "type": "object"
+                },
+                "quote_tweet_id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "reply": {
+                  "properties": {
+                    "auto_populate_reply_metadata": {
+                      "required": false,
+                      "type": "boolean"
+                    },
+                    "exclude_reply_user_ids": {
+                      "required": false,
+                      "type": "[]STRING"
+                    },
+                    "in_reply_to_tweet_id": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "in_reply_to_tweet_id"
+                  ],
+                  "type": "object"
+                },
+                "reply_settings": {
+                  "required": false,
+                  "type": "string"
+                },
+                "share_with_followers": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "text": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Twitter.twitter_v2@1.0.0",
+      "method_hash": "d8d534c376dac18eec132223875ada61807d35eb3504a0ba6469debbbc6043f1",
+      "output": {
+        "schema": {
+          "properties": {
+            "data": {
+              "properties": {
+                "edit_history_post_ids": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "id": {
+                  "required": true,
+                  "type": "string"
+                },
+                "text": {
+                  "required": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "text"
+              ],
+              "type": "object"
+            },
+            "errors": {
+              "items": {
+                "properties": {
+                  "_COMPOSITION": {
+                    "required": false,
+                    "type": "ONE_OF"
+                  },
+                  "type": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "variant_DisallowedResourceProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "resource_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "section": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_FieldHydrationFailureProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "field": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "section": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "field",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_FieldUnauthorizedProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "field": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "section": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "field",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_InternalErrorProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_InvalidRequestProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "parameter": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_NotAuthorizedForFieldProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "field": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "parameter": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "section": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "field",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_NotAuthorizedForResourceProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "parameter": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "section": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "resource_type",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_ResourceNotFoundProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "parameter": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "resource_type",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "variant_ResourceUnavailableProblem": {
+                    "properties": {
+                      "detail": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "resource_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "resource_type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "status": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "title": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "detail",
+                      "resource_type",
+                      "title",
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            }
+          }
+        },
+        "status": 201
+      },
+      "summary": "Create Posts",
+      "type": "method"
+    }
+  },
+  "version": "2.20.4"
+}
